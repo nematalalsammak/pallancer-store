@@ -1,11 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\CategoriesController;
-use App\Http\Controllers\Admin\TagsController;
-use App\Http\Controllers\Admin\UsersController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\RegistersController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,24 +16,45 @@ use App\Http\Controllers\RegistersController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+require __DIR__.'/auth.php';
+
+//Route::get('/', 'TemplateController@index');
+Route::get('/',[HomeController::class,'index']);
+
 //Route::get('/dashboard','DashboardController@index');
 //OR
 //Route::get('/dashboard',[DashboardController::class,'index']);
-Route::get('admin/categories',[CategoriesController::class,'index']);
-Route::get('admin/categories/create',[CategoriesController::class,'create']);
-Route::post('admin/categories/create',[CategoriesController::class,'store']);
-Route::get('admin/categories/{id}/edit',[CategoriesController::class,'edit']);
-Route::put('admin/categories/{id}',[CategoriesController::class,'update']);
-Route::delete('admin/categories/{id}',[CategoriesController::class,'destroy']);
-//Route::get('/categories/{id}/{title}',[CategoriesController::class,'show']);
-Route::get('admin/tags/{id}/products',[TagsController::class,'products']);
-Route::resource('admin/products','Admin\ProductsController');
+Route::namespace('Admin')
+->prefix('admin')
+->as('admin.')
+->group(function(){
+Route::group([
+    'prefix' => 'categories',
+    'as' => 'categories.',
+], function () {
+    //admin.categories.index
+    Route::get('/', 'CategoriesController@index')->name('index');
+    Route::get('/create', [CategoriesController::class, 'create'])->name('create');
+    //Route::get('/{id}',[CategoriesController::class,'show'])->name('show');
+    Route::post('/create', [CategoriesController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [CategoriesController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [CategoriesController::class, 'update'])->name('update');
+    Route::delete('/{id}', [CategoriesController::class, 'destroy'])->name('destroy');
+    //Route::get('/categories/{id}/{title}',[CategoriesController::class,'show']);
+});
+    Route::resource('products', 'ProductsController');
+});
 
+Route::get('admin/tags/{id}/products', [TagsController::class, 'products']);
+//Route::get('register', [RegistersController::class, 'create']);
+//Route::post('register', [RegistersController::class, 'store']);
 
-Route::get('register',[RegistersController::class,'create']);
-Route::post('register',[RegistersController::class,'store']);
-
-Route::get('admin/users/{id}',[UsersController::class,'show'])->name('admin.users.show');
+Route::get('admin/users/{id}', [UsersController::class, 'show'])->name('admin.users.show');
 
 /*Route::get('regexp',function(){
     $test='059-7230922,059-2457963';
@@ -46,4 +62,3 @@ Route::get('admin/users/{id}',[UsersController::class,'show'])->name('admin.user
     preg_match_all($exp,$test,$matches);
     dd($matches);
 });*/
-

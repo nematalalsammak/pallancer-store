@@ -17,7 +17,7 @@ class CreateTableStores extends Migration
             $table->id();
             $table->timestamps();
             $table->string('name');
-            $table->string('sluge')->unique();
+            $table->string('slug')->unique();
             $table->char('currency',3)->default('USD');
             $table->char('locale',2)->default('en');
             $table->string('logo')->nullable();

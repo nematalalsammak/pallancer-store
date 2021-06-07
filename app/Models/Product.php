@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     use HasFactory;
+    protected $perpage=10;
+    protected $fillable=[
+        'name','category_id','description',
+        'status','image','price','sale_price',
+        'quantity','slug','store_id',
+    ];
 
    /* protected $with =[
         'category',
@@ -16,7 +22,9 @@ class Product extends Model
     ];*/
     public function category()
     {
-        return $this->belongsTo(Category::class,'category_id','id');
+        return $this->belongsTo(Category::class,'category_id','id')->withDefault([
+            'name'=>'No category'
+        ]);
 
     }
     public function store()
@@ -35,5 +43,24 @@ class Product extends Model
             'id',
             'id',
         );
+    }
+
+    public static function validateRules()
+    {
+        return [
+            'name'=>'required|string|max:255|min:3',
+            'category_id'=>'required|exists:categories,id',
+            'image'=>'image',
+            'price'=>'numeric|min:0',
+            'sale_price'=>['numeric','min:0',function($attr,$value,$fail){
+                $price=request()->input('price');
+                if($value>=$price)
+                {
+                    $fail($attr .' must be less than regular price');
+
+                }
+
+            },]
+        ];
     }
 }
