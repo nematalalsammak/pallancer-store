@@ -8,7 +8,6 @@
     </ul>
 </div>
 @endif
-
 <div class="form-group mb-3">
     <label for="">Name:</label>
     <input type="text" name="name" value="{{ old('name',$product->name) }}" class="form-control @error('name') is-invalid @enderror">
@@ -37,8 +36,25 @@
 </div>
 <div class="form-group mb-3">
     <label for="">Image:</label>
+    <div class="mb-2">
+        <img src="{{ $product->image_url }}" height="150" alt="">
+    </div>
     <input type="file" name="image" class="form-control @error('image') is-invalid @enderror">
     @error('image')
+    <p class="invalid-feedback">{{ $message }}</p>
+    @enderror
+</div>
+<div class="form-group mb-3">
+    <label for="">Gallery:</label>
+    <div class="row">
+        @foreach($product->images as $image)
+        <div class="col-md-2">
+            <img src="{{ $image->image_url }}" height="100" class="img-fit m-1 border p-1">
+        </div>
+        @endforeach
+    </div>
+    <input type="file" name="gallery[]" multiple class="form-control @error('gallery') is-invalid @enderror">
+    @error('gallery')
     <p class="invalid-feedback">{{ $message }}</p>
     @enderror
 </div>
