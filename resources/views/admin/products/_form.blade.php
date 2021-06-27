@@ -80,6 +80,13 @@
     @enderror
 </div>
 <div class="form-group mb-3">
+    <label for="">Tags:</label>
+    <input type="text" name="tags" value="{{ old('tags',$tags) }}" class="tagify form-control @error('tags') is-invalid @enderror">
+    @error('tags')
+    <p class="invalid-feedback">{{ $message }}</p>
+    @enderror
+</div>
+<div class="form-group mb-3">
     <label for="">Status:</label>
     <div>
         <label><input type="radio" name="status" value="in-stock" class="form-check-input" @if(old('status',$product->status) == 'in-stock') checked @endif>
@@ -97,3 +104,14 @@
 <div class="form-group">
     <button type="submit" class="btn btn-primary">{{ $button_lable ?? 'save'}}</button>
 </div>
+@push('css')
+<link rel="stylesheet" href="{{ asset('js/tagify/tagify.css') }}">
+@endpush
+
+@push('js')
+<script src="{{ asset('js/tagify/tagify.min.js') }}"></script>
+<script>
+var inputElm = document.querySelector('.tagify'),
+    tagify = new Tagify (inputElm);
+</script>
+@endpush

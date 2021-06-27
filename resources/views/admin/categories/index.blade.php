@@ -39,11 +39,13 @@
             <td>{{ $category->status }}</td>
             <td>{{ $category->description }}</td>
             <td>
+            @can('delete',$category)
                 <form action="/admin/categories/{{ $category->id }}" method="POST">
                     @csrf
                     @method('delete')
                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
+            @endcan    
             </td>
         </tr>
         @endforeach

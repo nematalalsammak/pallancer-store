@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Rules\WordFilter;
+use App\Scopes\ActiveStatusScope;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -21,6 +23,8 @@ class CategoriesController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('view-any',Category::class); 
+
         $categories=Category::when($request->name,function($query,$value){
             $query->where(function($query)use($value){
             $query->where('categories.name','LIKE',"%$value%")
@@ -39,6 +43,7 @@ class CategoriesController extends Controller
         ])*/
         //OR
         ->with('parent')
+        //->withoutGlobalScope(ActiveStatusScope::class)
         ->get();
 
         //OR
@@ -68,6 +73,8 @@ class CategoriesController extends Controller
 
     public function create()
     {
+        $this->authorize('create',Category::class); 
+
         $parents=Category::all();
         //OR
         //$parents=Category::orderBy('name','asc')->get();
@@ -89,6 +96,8 @@ class CategoriesController extends Controller
     }
     public function store(Request $request)
     {
+        $this->authorize('create',Category::class); 
+
         /*$validator=Validator::make(
             $request->all(),
             [
@@ -128,12 +137,24 @@ class CategoriesController extends Controller
         /*session()->flash('success','Category Added!');
         return redirect('/admin/categories');*/
     }
+    public function show($id)
+    {
+        $category = Category::findOrFail($id);
+
+        $this->authorize('view',$category);
+
+        return view('admin.categories.show', [
+            'category' => $category,
+        ]);
+    }
 
     public function edit($id)
     {
         //$category=Category::where('id','=',$id)->first();
         //OR
         $category=Category::findOrFail($id);
+        $this->authorize('update',$category);
+
         /*if($category == null)
         {
             abort(404);
@@ -149,7 +170,10 @@ class CategoriesController extends Controller
 
     public function update(Request $request,$id)
     {
-        $category=Category::find($id);
+        $category=Category::findOrFail($id);
+
+        $this->authorize('update',$category);
+
         if($category == null)
         {
             abort(404);
@@ -171,6 +195,8 @@ class CategoriesController extends Controller
     {
         //Method 1
         $category=Category::find($id);
+        $this->authorize('delete',$category);
+
         $category->delete();
 
         //OR Method 2
@@ -185,9 +211,34 @@ class CategoriesController extends Controller
 
     }
 
-    public function show($id,$title)
+    /*public function show($id,$title)
     {
         return $title . ':' . ($this->items[$id] ?? 'Not Found');
+    }*/
+
+    public function trash()
+    {
+        return view('admin.categories.trash',[
+            'categories'=>Category::onlyTrashed()->paginate(),
+        ]);
+    }
+
+    public function restore($id)
+    {
+        $category=Category::onlyTrashed()->findOrFail($id);
+        $category->restore();
+        return redirect()
+        ->route('admin.categories.trash')
+        ->with('success','Category restored');
+    }
+
+    public function forceDelete($id)
+    {
+        $category=Category::onlyTrashed()->findOrFail($id);
+        $category->forceDelete();
+        return redirect()
+        ->route('admin.categories.trash')
+        ->with('success','Category deleted forever.');
     }
 
     public function validateRequest(Request $request)
@@ -219,5 +270,15 @@ class CategoriesController extends Controller
         }*/
 
         
+    }
+
+    public function storeProduct(Request $request,$id)
+    {
+        $category=Category::findOrFail($id);
+        $category->products()->create([
+            'name'=>'Product Name',
+            'price'=>10,
+            
+        ]);
     }
 }

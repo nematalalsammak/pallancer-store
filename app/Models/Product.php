@@ -2,15 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 class Product extends Model
 {
     use HasFactory;
+    use SoftDeletes;
+    use Notifiable;
+
+    
     protected $perpage=10;
+
+    protected $touches=['category'];
     protected $fillable=[
         'name','category_id','description',
         'status','image','price','sale_price',
@@ -22,6 +32,27 @@ class Product extends Model
         'store',
         'tags'
     ];*/
+
+    protected static function booted()
+    { 
+        static::addGlobalScope('in-stock',function(Builder $builder){
+            $builder->where('status','=','in-stock');
+
+        });
+    }
+
+    public function scopeSoldout(Builder $builder)
+    {
+        $builder->where('status','=','sold-out');
+    }
+
+    public function scopeStatus(Builder $builder,$status)
+    {
+        $builder->where('status','=',$status);
+    }
+
+
+
     public function category()
     {
         return $this->belongsTo(Category::class,'category_id','id')->withDefault([
